@@ -36,3 +36,8 @@ Replace all `"your-test-server-address"` text in the source codes of this projec
 Copy all folders and files under `arduino_client` to your Arduino sketch folder.
 
 Copy `SHA-1` folder under `arduino_lib` to your Arduino IDE `libraries` folder as well.
+
+# Revisions
+
+1.0.0 Initial Release
+
