@@ -84,6 +84,12 @@ class PubProtocol(basic.LineReceiver):
                     len(out), payloadHash.hexdigest().upper()))
                 for c in self.factory.clients:
                     c.send(out)
+            elif data[0]=='\x03':
+                # error report
+                self.logger.info("--------------------------------------------------- %s" % datetime.datetime.now())
+                self.logger.info("Code(hex) : %0.2X" % ord(data[1]))
+                self.logger.info("Len       : %d" % len(data))
+                
             else:
                 # broadcast to clients
                 size = int(data)

@@ -6,6 +6,8 @@ const char *server = "your-test-server-address";
 const int port = 8001;
 #define LENGTH 321
 byte data[LENGTH];
+boolean is_connected = false;
+int last_error = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -14,10 +16,6 @@ void setup() {
   Serial.print("Initializing.. ");
   if (a3gs.start() == 0 && a3gs.begin() == 0) {
     Serial.println("Succeeded.");
-    if (a3gs.connectTCP(server, port) != 0) {
-      Serial.println("connectTCP() can't connect");
-      return;
-    }
   }
   Serial.println("Warning!");
   Serial.println("Warning!");
@@ -63,7 +61,34 @@ int prepareRequest() {
     return length;
 }
 
+void reportError(int code) {
+    int length = 0;
+    data[length++] = 0x03;
+    data[length++] = code;
+    a3gs.write(data, length);
+    Serial.print("Report Sent. Code(hex)=");
+    Serial.print(code, HEX);
+    Serial.print(", Code(dec)=");
+    Serial.println(code);
+    delay(30000);
+}
+
 void loop() {
+    int nbytes;
+
+    if (!is_connected) {
+      if ((nbytes = a3gs.connectTCP(server, port)) != 0) {
+        delay(30000);
+        Serial.println("connectTCP() can't connect");
+        last_error = nbytes;
+        return;
+      }
+      is_connected = true;
+      if (last_error != 0) {
+        reportError(last_error);
+      }
+    }
+
     unsigned long startAt = millis();
     const int length = prepareRequest();
     a3gs.write(data, length);
@@ -71,13 +96,13 @@ void loop() {
     Serial.println(length);
     Serial.println(" bytes.");
 
-    int nbytes;
-
     // NOTICE: Not a good impl. as this code assumes nbytes is always same as LENGTH.
     do {
       if ((nbytes = a3gs.read(data, LENGTH)) < 0) {
         Serial.println("read() failed");
-        break;
+        is_connected = false;
+        last_error = nbytes;
+        return;
       }
       if (nbytes == 0) {
         continue;
