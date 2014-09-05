@@ -39,5 +39,7 @@ Copy `SHA-1` folder under `arduino_lib` to your Arduino IDE `libraries` folder a
 
 # Revisions
 
+1.0.1 Improves connection handling for long running test
+
 1.0.0 Initial Release
 
